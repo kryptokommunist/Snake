@@ -67,6 +67,7 @@ private:
   void snake_slither(DirectionType_t dir);
   void snake_push_segment(IntervalType_t interval);
   void buffer_draw_segment(bool val, unsigned int start_x, unsigned int start_y, unsigned int end_x, unsigned int end_y);
+  void buffer_draw_point(bool val, unsigned int x, unsigned int y);
   IntervalType_t snake_head();
   DirectionType_t snake_heading();
   IntervalType_t snake_end_point();

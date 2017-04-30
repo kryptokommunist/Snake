@@ -1,5 +1,5 @@
 // - - - - -
-// A demo Application for our little Arduino Library. Please copy the FLIPDOT folder into your Arduino/libraries folder to use the lib
+// A demo Application for our little Arduino Library. Please copy the Snakegame folder into your Arduino/libraries folder to use the lib
 //
 //
 // Copyright (C) 2016 fluepke, kryptokommunist <fabian.luepke@student.hpi.de>,<marcus.ding@student.hpi.de>
@@ -9,24 +9,41 @@
 //
 // Documentation and samples are available at https://github.com/nerdmanufaktur/flipdot
 // - - - -
-#include <FLIPDOT.h>
 #include "Snake.h"
 
-FLIPDOT* board = new FLIPDOT();
+const int xPin = A0; //X attach to A0
+const int yPin = D1; //Y attach to A1
+const int btPin = D0; //Bt attach to digital 7
 Snake* game = new Snake(50,50);
+DirectionType_t dir = SNAKE_RIGHT;
 
 void setup() {
   Serial.begin(115200);
-  board->init(); //should come after wifi is connected on ESP8266
   game->start_game();
-
+  pinMode(btPin,INPUT); //set btpin as INPUT
+  digitalWrite(btPin, HIGH); //and HIGH
+  pinMode(yPin,INPUT); //set btpin as INPUT
+  digitalWrite(yPin, HIGH); //and HIGH
 }
 
 void loop() {
-  if(game->step(SNAKE_UP)){
+  int x = analogRead(xPin);
+  int y = digitalRead(yPin);
+  int bt = digitalRead(btPin);
+  if(x < 400){
+    dir = SNAKE_LEFT;
+  } else if (x > 900) {
+    dir = SNAKE_RIGHT;
+  } else if (y == 0) {
+    dir = SNAKE_UP;
+  } else if (bt == 0) {
+    dir = SNAKE_DOWN;
+  }
+  if(game->step(dir)){
     game->render_frame_buffer();
   } else {
+    dir = SNAKE_RIGHT;
    game->start_game();
   }
-    delay(2000);
+    delay(400);
 }
