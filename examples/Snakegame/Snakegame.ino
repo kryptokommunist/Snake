@@ -19,12 +19,12 @@ void setup() {
   Serial.begin(115200);
   board->init(); //should come after wifi is connected on ESP8266
   game->start_game();
-  
+
 }
 
 void loop() {
-  if(game->step(SNAKE_RIGHT)){
-    
+  if(game->step(SNAKE_UP)){
+    game->render_frame_buffer();
   } else {
    game->start_game();
   }
