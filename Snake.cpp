@@ -25,6 +25,7 @@ Snake::Snake(unsigned int width, unsigned int height) {
     for(int i = 0; i < screen_width; i++){
       screen_buffer[i] = new bool[screen_height];
     }
+    randomSeed(analogRead(A0));
 }
 
 /*
@@ -36,14 +37,16 @@ void Snake::start_game() {
     }
     snake.clear();
     DBG_OUTPUT_PORT_NL("Starting Snake game")
+    place_food();
+
     unsigned int head_x = screen_width/2;
     unsigned int head_y = screen_height/2;
     unsigned int tail_x = head_x - SNAKE_STARTING_LENGTH+1;
     unsigned int tail_y = head_y;
     IntervalType_t head = std::make_tuple(head_x, head_y, SNAKE_RIGHT);
     IntervalType_t end_point = std::make_tuple(tail_x, tail_y, SNAKE_END);
-    snake_push_segment(end_point);
-    snake_push_segment(head);
+    snake.push_front(end_point);
+    snake.push_front(head);
     for(int i = 0; i < SNAKE_STARTING_LENGTH; i++){
         buffer_draw_point(true, tail_x+i, tail_y);
     }
@@ -55,15 +58,6 @@ draw point in buffer
 void Snake::buffer_draw_point(bool val, unsigned int x, unsigned int y) {
     DBG_OUTPUT_PORT_NL("drawing point in buffer")
     screen_buffer[x][y] = val;
-}
-
-
-/*
-add a new interval to the snake
-*/
-void Snake::snake_push_segment(IntervalType_t interval) {
-    DBG_OUTPUT_PORT_NL("Pushing new interval to snake");
-    snake.push_front(interval);
 }
 
 /*
@@ -115,15 +109,15 @@ void Snake::end_game() {
 }
 
 /*
-move snake a step into given direction
+move snake a step into given direction. returns true if the snake digested food (tail gets longer).
 */
-void Snake::snake_slither(DirectionType_t dir) {
+bool Snake::snake_slither(DirectionType_t dir) {
     //handle head
     DBG_OUTPUT_PORT_NL("Snake slithers")
     if(dir != snake_heading()){
       IntervalType_t new_head = snake_head();
       std::get<2>(new_head) = dir;
-      snake_push_segment(new_head);
+      snake.push_front(new_head);
     }
 
     IntervalType_t head = snake_head();
@@ -138,11 +132,9 @@ void Snake::snake_slither(DirectionType_t dir) {
       std::get<0>(head) += 1;
     } else {
       DBG_OUTPUT_PORT_NL("Snake slither ERROR!")
-      DBG_OUTPUT_PORT_NL("Snake slither ERROR!")
-      DBG_OUTPUT_PORT_NL("Snake slither ERROR!")
     }
     snake.pop_front();
-    snake_push_segment(head);
+    snake.push_front(head);
 
     //handle tail
     IntervalType_t end_point = snake_end_point();
@@ -150,6 +142,17 @@ void Snake::snake_slither(DirectionType_t dir) {
     unsigned int tail_x = std::get<0>(tail);
     unsigned int tail_y = std::get<1>(tail);
     unsigned int tail_direction = std::get<2>(tail);
+
+    if(!snake_stomach.empty()){
+      IntervalType_t food = snake_stomach.back();
+      unsigned int food_x = std::get<0>(food);
+      unsigned int food_y = std::get<1>(food);
+      if(std::get<0>(end_point) == food_x && std::get<1>(end_point) == food_y) {
+        snake_stomach.pop_back();
+        return true;; //don't shorten the tail this round
+      }
+    }
+
     if(tail_direction == SNAKE_UP){
       std::get<1>(end_point) += 1;
     } else if (tail_direction == SNAKE_DOWN) {
@@ -168,6 +171,7 @@ void Snake::snake_slither(DirectionType_t dir) {
       snake.pop_back(); //remove former tail
       snake.push_back(end_point); //add end_point again
     }
+    return false;
 }
 
 /*
@@ -176,26 +180,30 @@ stepping to next game state, returns false if game over
 bool Snake::step(DirectionType_t dir) {
     DBG_OUTPUT_PORT_NL("Snake game stepping")
     IntervalType_t previous_end_point = snake_end_point();
-    snake_slither(dir);
+    bool had_food = snake_slither(dir);
+    DBG_OUTPUT_PORT_NL("Snake finished slithering")
     IntervalType_t updated_head = snake_head();
     unsigned int updated_head_x = std::get<0>(updated_head);
     unsigned int updated_head_y = std::get<1>(updated_head);
-    if(snake_collision(updated_head_x,updated_head_y)){
-      end_game();
-      return false;
-    } else if(snake_head_is_in_bounds()){
-      /*
-        TO DO
-      */
+    if(updated_head_x == food_x && updated_head_y == food_y){
+      snake_stomach.push_front(std::make_tuple(food_x,food_y,SNAKE_FOOD));
+      place_food();
+    } else {
+      if(snake_collision(updated_head_x,updated_head_y)){
+        end_game();
+        return false;
+      }
+    }
+    if(snake_head_is_in_bounds()){
+      DBG_OUTPUT_PORT_NL("Snake head is in bounds")
       buffer_draw_point(true,updated_head_x,updated_head_y);
-      buffer_draw_point(false,std::get<0>(previous_end_point),std::get<1>(previous_end_point));
+      buffer_draw_point(had_food,std::get<0>(previous_end_point),std::get<1>(previous_end_point));
     } else {
       /*
         TO DO
       */
-      DBG_OUTPUT_PORT_NL("Snake step ERROR!")
-      DBG_OUTPUT_PORT_NL("Snake step ERROR!")
-      DBG_OUTPUT_PORT_NL("Snake step ERROR!")
+      DBG_OUTPUT_PORT_NL("Snake head is NOT in bounds")
+      return false;
     }
     return true;
 }
@@ -204,16 +212,27 @@ bool Snake::step(DirectionType_t dir) {
 checks for collision with snake, returns true/false
 */
 bool Snake::snake_collision(unsigned int x, unsigned int y) {
-    if(screen_buffer[x][y]){
-      /*
-        to do: implement checking for food
-      */
+    if(snake_head_is_in_bounds() && screen_buffer[x][y]){
       return true;
     }
     return false;
 }
 
-
+/*
+places food for the snake
+*/
+void Snake::place_food() {
+    DBG_OUTPUT_PORT("Placing food");
+    unsigned int x;
+    unsigned int y;
+    do {
+        x = (unsigned int) random(screen_width);
+        y = (unsigned int) random(screen_height);
+    } while(pixel_is_set(x,y));
+    buffer_draw_point(true,x,y);
+    food_x = x;
+    food_y = y;
+}
 
 /*
 returns true if pixel at given position is set

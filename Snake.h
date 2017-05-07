@@ -24,7 +24,7 @@
 
 // ---- Constants/Preprocessor functions ----
 
-#define SNAKE_STARTING_LENGTH 5
+#define SNAKE_STARTING_LENGTH 3
 
 #if defined(DBG)
   #define DBG_OUTPUT_PORT(data) Serial.print(data);
@@ -35,7 +35,7 @@
 #endif
 
 //SNAKE_END is no direction it marks that this is the end of the snake (no direction)
-typedef enum { SNAKE_UP, SNAKE_DOWN, SNAKE_LEFT, SNAKE_RIGHT, SNAKE_END } DirectionType_t;
+typedef enum { SNAKE_UP, SNAKE_DOWN, SNAKE_LEFT, SNAKE_RIGHT, SNAKE_END, SNAKE_FOOD } DirectionType_t;
 
 //std::get<0>(interval) => x Coordinate
 //std::get<1>(interval) => y Coordinate
@@ -60,13 +60,15 @@ private:
   unsigned int screen_height;
   unsigned int screen_width;
   bool** screen_buffer;
+  unsigned int food_x;
+  unsigned int food_y;
   //the snake is a list of x and y dimension intervals ordered tail to head
   //{tail tuple marked with direction SNAKE_END, ... , head tuple}
   IntervalListType_t snake;
+  //contains the eaten food
+  IntervalListType_t snake_stomach;
   void end_game();
-  void snake_slither(DirectionType_t dir);
-  void snake_push_segment(IntervalType_t interval);
-  void buffer_draw_segment(bool val, unsigned int start_x, unsigned int start_y, unsigned int end_x, unsigned int end_y);
+  bool snake_slither(DirectionType_t dir);
   void buffer_draw_point(bool val, unsigned int x, unsigned int y);
   IntervalType_t snake_head();
   DirectionType_t snake_heading();
@@ -74,6 +76,7 @@ private:
   IntervalType_t snake_tail();
   bool snake_head_is_in_bounds();
   bool snake_collision(unsigned int x, unsigned int y);
+  void place_food();
 };
 
 #endif
