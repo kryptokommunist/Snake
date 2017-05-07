@@ -13,7 +13,7 @@
 // ---- Options ----
 
 //comment out to disable debugging information via Serial
-#define DBG
+//#define DBG
 
 #include <list>
 #include <tuple>

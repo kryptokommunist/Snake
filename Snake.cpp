@@ -36,6 +36,7 @@ void Snake::start_game() {
       memset(screen_buffer[i], false, screen_height*sizeof(bool));
     }
     snake.clear();
+    snake_stomach.clear();
     DBG_OUTPUT_PORT_NL("Starting Snake game")
     place_food();
 
