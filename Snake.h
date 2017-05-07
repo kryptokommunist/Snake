@@ -34,48 +34,59 @@
   #define DBG_OUTPUT_PORT_NL(data)
 #endif
 
-//SNAKE_END is no direction it marks that this is the end of the snake (no direction)
-typedef enum { SNAKE_UP, SNAKE_DOWN, SNAKE_LEFT, SNAKE_RIGHT, SNAKE_END, SNAKE_FOOD } DirectionType_t;
-
-//std::get<0>(interval) => x Coordinate
-//std::get<1>(interval) => y Coordinate
-//std::get<2>(interval) => direction of interval
-typedef std::tuple<unsigned int, unsigned int, DirectionType_t> IntervalType_t;
-
 // ---- Methods ----
 
 class Snake {
 
 public:
+  /*
+    END is no direction it marks that this is the end of the snake (no direction)
+    FOOD similar case, marks a food item
+    AUTO is telling the snake to use the autopilot finding food
+    NUMBER_OF_DIRECTIONS is useful for lookup tables with enum as index
+  */
+  typedef enum { UP = 0, DOWN, LEFT, RIGHT, END, FOOD, AUTO } Direction;
   Snake(unsigned int screen_width, unsigned int screen_height);
   void start_game();
-  bool step(DirectionType_t dir);
+  bool step(Direction dir);
   bool pixel_is_set(unsigned int x, unsigned int y);
   #if defined(DBG)
     void render_frame_buffer();
   #endif
 private:
-  typedef struct {unsigned int x; unsigned int y;} PointType_t;
-  typedef std::list<IntervalType_t> IntervalListType_t;
+  /*
+    std::get<0>(interval) => x Coordinate
+    std::get<1>(interval) => y Coordinate
+    std::get<2>(interval) => direction of interval
+  */
+  typedef std::tuple<unsigned int, unsigned int, Direction> Interval;
+  typedef std::list<Interval> IntervalList;
+  /*
+    The snake is a list of x and y dimension points ordered tail to head
+    {endpoint tuple marked with direction END, tail tuple, ... , head tuple}
+    the endpoint has no direction since it just marks the end, the tail is the sencond last tuple which gives you the tails direction
+  */
   unsigned int screen_height;
   unsigned int screen_width;
   bool** screen_buffer;
   unsigned int food_x;
   unsigned int food_y;
-  //the snake is a list of x and y dimension intervals ordered tail to head
-  //{tail tuple marked with direction SNAKE_END, ... , head tuple}
-  IntervalListType_t snake;
-  //contains the eaten food
-  IntervalListType_t snake_stomach;
+  IntervalList snake;
+  //contains the eaten food not appended to the tail yet
+  IntervalList snake_stomach;
+  //lookup table to check for opposite directions, possibly over optimizing there
+  bool is_opposite[4][4] = {{false, true, false, false}, {true, false, false, false}, {false, false, false, true}, {false, false, true, false}};
   void end_game();
-  bool snake_slither(DirectionType_t dir);
+  bool snake_slither(Direction dir);
   void buffer_draw_point(bool val, unsigned int x, unsigned int y);
-  IntervalType_t snake_head();
-  DirectionType_t snake_heading();
-  IntervalType_t snake_end_point();
-  IntervalType_t snake_tail();
+  Interval snake_head();
+  Direction snake_heading();
+  Interval snake_end_point();
+  Interval snake_tail();
   bool snake_head_is_in_bounds();
   bool snake_collision(unsigned int x, unsigned int y);
+  Direction handle_opposite_direction(Direction dir);
+  Direction snake_autopilot();
   void place_food();
 };
 

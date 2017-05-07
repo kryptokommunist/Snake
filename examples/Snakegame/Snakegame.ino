@@ -15,7 +15,7 @@ const int xPin = A0; //X attach to A0
 const int yPin = D1; //Y attach to A1
 const int btPin = D0; //Bt attach to digital 7
 Snake* game = new Snake(50,50);
-DirectionType_t dir = SNAKE_RIGHT;
+Snake::Direction dir = Snake::RIGHT;
 
 void setup() {
   Serial.begin(115200);
@@ -31,18 +31,18 @@ void loop() {
   int y = digitalRead(yPin);
   int bt = digitalRead(btPin);
   if(x < 400){
-    dir = SNAKE_LEFT;
+    dir = Snake::LEFT;
   } else if (x > 900) {
-    dir = SNAKE_RIGHT;
+    dir = Snake::RIGHT;
   } else if (y == 0) {
-    dir = SNAKE_UP;
+    dir = Snake::UP;
   } else if (bt == 0) {
-    dir = SNAKE_DOWN;
+    dir = Snake::DOWN;
   }
   if(game->step(dir)){
     game->render_frame_buffer();
   } else {
-    dir = SNAKE_RIGHT;
+    dir = Snake::RIGHT;
    game->start_game();
   }
     delay(400);
