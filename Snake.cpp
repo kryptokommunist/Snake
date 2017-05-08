@@ -37,9 +37,9 @@ void Snake::start_game() {
     }
     snake.clear();
     snake_stomach.clear();
+    score = 0;
     DBG_OUTPUT_PORT_NL("Starting Snake game")
     place_food();
-
     unsigned int head_x = screen_width/2;
     unsigned int head_y = screen_height/2;
     unsigned int tail_x = head_x - SNAKE_STARTING_LENGTH+1;
@@ -106,7 +106,7 @@ end the snake game
 */
 void Snake::end_game() {
     DBG_OUTPUT_PORT_NL("Game over!");
-//render some nice stats or sth
+    //render some nice stats or stats
 }
 
 /*
@@ -192,6 +192,7 @@ bool Snake::step(Direction dir) {
     unsigned int updated_head_y = std::get<1>(updated_head);
     if(updated_head_x == food_x && updated_head_y == food_y){ //snake found food
       snake_stomach.push_front(std::make_tuple(food_x,food_y,FOOD));
+      score++;
       place_food();
     } else { //no food so we check if the snake collided with itself
       if(snake_collision(updated_head_x,updated_head_y)){

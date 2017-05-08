@@ -45,6 +45,7 @@ public:
     AUTO is telling the snake to use the autopilot finding food
     NUMBER_OF_DIRECTIONS is useful for lookup tables with enum as index
   */
+  int score;
   typedef enum { UP = 0, DOWN, LEFT, RIGHT, END, FOOD, AUTO } Direction;
   Snake(unsigned int screen_width, unsigned int screen_height);
   void start_game();
