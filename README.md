@@ -4,3 +4,9 @@ A generic Snake game in form of an Arduino library. Intialize with `Snake::Snake
 # Usage
 1. move this folder in /Arduino/libraries
 2. run examples/Snakegame/Snakegame.ino to test it
+
+# Example
+
+[![Flipdot running Snake](https://img.youtube.com/vi/20Qu84PdY4Y/0.jpg)](https://www.youtube.com/watch?v=20Qu84PdY4Y)
+
+Find the code [here!](https://github.com/nerdmanufaktur/flipdot/blob/master/Arduino/examples/Wemos_Demo/Wemos_Demo.ino)
