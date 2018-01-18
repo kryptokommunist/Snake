@@ -7,6 +7,6 @@ A generic Snake game in form of an Arduino library. Intialize with `Snake::Snake
 
 # Example
 
-[![Flipdot running Snake](https://img.youtube.com/vi/20Qu84PdY4Y/0.jpg)](https://www.youtube.com/watch?v=20Qu84PdY4Y)
+[![Flipdot running Snake](https://img.youtube.com/vi/TgFTgHuQ3Pw/0.jpg)](https://www.youtube.com/watch?v=TgFTgHuQ3Pw)
 
 Find the code [here!](https://github.com/nerdmanufaktur/flipdot/blob/master/Arduino/examples/Wemos_Demo/Wemos_Demo.ino)
